@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/meeting-revenue-calculator/static/css/main.3fedf4c7.css",
+    "main.js": "/meeting-revenue-calculator/static/js/main.aea09a79.js",
+    "index.html": "/meeting-revenue-calculator/index.html",
+    "main.3fedf4c7.css.map": "/meeting-revenue-calculator/static/css/main.3fedf4c7.css.map",
+    "main.aea09a79.js.map": "/meeting-revenue-calculator/static/js/main.aea09a79.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3fedf4c7.css",
+    "static/js/main.aea09a79.js"
+  ]
+}
