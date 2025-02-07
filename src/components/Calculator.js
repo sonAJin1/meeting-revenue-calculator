@@ -22,6 +22,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { toast } from 'react-toastify';
+import { ToggleButtonGroup, ToggleButton } from '@mui/material';  // Add this import
 
 // Helper functions
 const formatNumber = (value) => {
@@ -36,6 +37,7 @@ const unformatNumber = (value) => {
 
 // Component
 const Calculator = () => {
+  // 상단의 state 선언부에 추가
   const [formData, setFormData] = useState({
     title: '',
     date: null,
@@ -47,6 +49,9 @@ const Calculator = () => {
     platformFee: '',
     targetProfit: '',
   });
+
+
+  const [isVenueFeePercent, setIsVenueFeePercent] = useState(false);
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem('calculationHistory');
@@ -100,7 +105,9 @@ const Calculator = () => {
       0
     );
     const platformFeeAmount = (totalRevenue * (Number(formData.platformFee) || 0)) / 100;
-    const venueFee = Number(formData.venueFee) || 0;
+    const venueFee = isVenueFeePercent 
+      ? (totalRevenue * (Number(formData.venueFee) || 0)) / 100
+      : Number(formData.venueFee) || 0;
     const netProfit = totalRevenue - materialsCost - platformFeeAmount - venueFee;
 
     const result = {
@@ -211,9 +218,6 @@ const Calculator = () => {
             gap: 1.5,
             p: 0.75,
             borderRadius: 1,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            }
           }}>
             <Box sx={{ 
               width: 24,
@@ -231,7 +235,7 @@ const Calculator = () => {
             <Typography sx={{ 
               color: '#444', 
               fontSize: '0.9rem',
-              lineHeight: 1.5,
+              lineHeight: 1.5
             }}>
               모임 참가비로 얻을 수 있는 <strong>예상 총 수입</strong>을 계산해드려요
             </Typography>
@@ -242,10 +246,7 @@ const Calculator = () => {
             alignItems: 'center', 
             gap: 1.5,
             p: 0.75,
-            borderRadius: 1,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            }
+            borderRadius: 1
           }}>
             <Box sx={{ 
               width: 24,
@@ -274,10 +275,7 @@ const Calculator = () => {
             alignItems: 'center', 
             gap: 1.5,
             p: 0.75,
-            borderRadius: 1,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            }
+            borderRadius: 1
           }}>
             <Box sx={{ 
               width: 24,
@@ -306,10 +304,7 @@ const Calculator = () => {
             alignItems: 'center', 
             gap: 1.5,
             p: 0.75,
-            borderRadius: 1,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            }
+            borderRadius: 1
           }}>
             <Box sx={{ 
               width: 24,
@@ -427,18 +422,21 @@ const Calculator = () => {
                   label="재료명"
                   value={material.name}
                   onChange={(e) => updateMaterial(index, 'name', e.target.value)}
+                  sx={{ flex: 1 }}  // 남은 공간을 모두 차지하도록 설정
                 />
                 <TextField
                   type="text"
                   label="단가"
                   value={formatNumber(material.price)}
                   onChange={(e) => updateMaterial(index, 'price', e.target.value)}
+                  sx={{ width: '150px' }}  // 고정 너비 설정
                 />
                 <TextField
                   type="text"
                   label="수량"
                   value={formatNumber(material.quantity)}
                   onChange={(e) => updateMaterial(index, 'quantity', e.target.value)}
+                  sx={{ width: '150px' }}  // 고정 너비 설정
                 />
                 <IconButton onClick={() => removeMaterial(index)}>
                   <DeleteIcon />
@@ -452,43 +450,126 @@ const Calculator = () => {
         <Box sx={{ mb: 5 }}>
           <Stack spacing={3}>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                fullWidth
-                label="장소 대관료"
-                type="text"
-                value={formatNumber(formData.venueFee)}
-                onChange={(e) => handleNumericChange('venueFee', e.target.value)}
-              />
-              <Box sx={{ width: '100%' }}>
-                <TextField
-                  fullWidth
-                  label="플랫폼 수수료 (%)"
-                  type="text"
-                  value={formatNumber(formData.platformFee)}
-                  onChange={(e) => handleNumericChange('platformFee', e.target.value)}
-                />
-                <Typography 
-                  sx={{ 
-                    mt: 1, 
-                    mb: 2, 
-                    fontSize: '0.875rem',
-                    height: '1.5em',
-                    color: formData.platformFee && (!formData.participants || !formData.feePerPerson) ? '#f44336' : '#666',
-                    textAlign: 'right'
-                  }}
-                >
-                  {formData.platformFee ? (
-                    (!formData.participants || !formData.feePerPerson) ? 
-                      "참여인원 수와 1인당 참가 비용을 입력해주세요" :
-                      `플랫폼 수수료: ${formatNumber(Math.floor(
-                        Number(unformatNumber(formData.participants)) * 
-                        Number(unformatNumber(formData.feePerPerson)) * 
-                        Number(unformatNumber(formData.platformFee)) / 100
-                      ))}원`
-                  ) : "플랫폼 수수료: 0원"}
-                </Typography>
+              {/* Venue Fee Input with Toggle */}
+              <Box sx={{ flex: 1, position: 'relative' }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <TextField
+                      fullWidth
+                      label={isVenueFeePercent ? "장소 대관료 (%)" : "장소 대관료 (원)"}
+                      type="text"
+                      value={formatNumber(formData.venueFee)}
+                      onChange={(e) => handleNumericChange('venueFee', e.target.value)}
+                    />
+                    {isVenueFeePercent && formData.venueFee && (
+                      <Typography 
+                        sx={{ 
+                          mt: 1,
+                          fontSize: '0.875rem',
+                          color: (!formData.participants || !formData.feePerPerson) ? '#f44336' : '#666',
+                          width: '100%',
+                          textAlign: 'right',
+                        }}
+                      >
+                        {(!formData.participants || !formData.feePerPerson) ? 
+                          "참여인원 수와 1인당 참가 비용을 입력해주세요" :
+                          `대관료: ${formatNumber(Math.floor(Number(formData.participants) * Number(formData.feePerPerson) * Number(formData.venueFee) / 100))}원`
+                        }
+                      </Typography>
+                    )}
+                  </Box>
+                  <ToggleButtonGroup
+                    value={isVenueFeePercent ? "percent" : "won"}
+                    exclusive
+                    onChange={(e, newValue) => {
+                      if (newValue !== null) {
+                        setIsVenueFeePercent(newValue === "percent");
+                      }
+                    }}
+                    size="small"
+                    sx={{ 
+                      height: '40px',
+                      alignSelf: 'flex-start',
+                      marginTop: '8px',
+                      border: '1px solid rgba(0, 0, 0, 0.12)',
+                      borderRadius: '4px',
+                      '& .MuiToggleButton-root': {
+                        border: 'none',
+                        borderRight: '1px solid rgba(0, 0, 0, 0.12)',
+                        '&:last-child': {
+                          borderRight: 'none'
+                        }
+                      }
+                    }}
+                  >
+                    <ToggleButton 
+                      value="won" 
+                      sx={{ 
+                        width: '40px',
+                        height: '40px',
+                        '&.Mui-selected': {
+                          backgroundColor: '#e3f2fd',
+                          color: '#1976d2',
+                          '&:hover': {
+                            backgroundColor: '#e3f2fd',
+                          }
+                        }
+                      }}
+                    >
+                      원
+                    </ToggleButton>
+                    <ToggleButton 
+                      value="percent" 
+                      sx={{ 
+                        width: '40px',
+                        height: '40px',
+                        '&.Mui-selected': {
+                          backgroundColor: '#e3f2fd',
+                          color: '#1976d2',
+                          '&:hover': {
+                            backgroundColor: '#e3f2fd',
+                          }
+                        }
+                      }}
+                    >
+                      %
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Box>
+              </Box>
+
+              {/* Platform Fee Input */}
+              <Box sx={{ flex: 1 }}>
+                {/* Platform Fee Input */}
+                <Box sx={{ flex: 1, position: 'relative' }}>
+                  <TextField
+                    fullWidth
+                    label="플랫폼 수수료 (%)"
+                    type="text"
+                    value={formatNumber(formData.platformFee)}
+                    onChange={(e) => handleNumericChange('platformFee', e.target.value)}
+                  />
+                  {formData.platformFee && (
+                    <Typography 
+                      sx={{ 
+                        mt: 1,
+                        fontSize: '0.875rem',
+                        color: (!formData.participants || !formData.feePerPerson) ? '#f44336' : '#666',
+                        width: '100%',
+                        textAlign: 'right',
+                      }}
+                    >
+                      {(!formData.participants || !formData.feePerPerson) ? 
+                        "참여인원 수와 1인당 참가 비용을 입력해주세요" :
+                        `수수료: ${formatNumber(Math.floor(Number(formData.participants) * Number(formData.feePerPerson) * Number(formData.platformFee) / 100))}원`
+                      }
+                    </Typography>
+                  )}
+                </Box>
               </Box>
             </Box>
+
+            {/* Target Profit Input */}
             <TextField
               fullWidth
               label="목표 수익 금액"
