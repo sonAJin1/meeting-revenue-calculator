@@ -86,11 +86,27 @@ const Calculator = () => {
     setFormData({ ...formData, [field]: numericValue });
   };
 
+
   const updateMaterial = (index, field, value) => {
     const newMaterials = [...formData.materials];
     const updatedValue = field === 'name' ? value : unformatNumber(value);
     newMaterials[index] = { ...newMaterials[index], [field]: updatedValue };
     setFormData({ ...formData, materials: newMaterials });
+  };
+
+  // Add this new function
+  const handleKeyDown = (e) => {
+    // Navigation keys
+    const navigationKeys = [
+      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 
+      'Home', 'End'
+    ];
+  
+    // Only allow if it's a navigation key or a number
+    if (!navigationKeys.includes(e.key) && !/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
   };
 
   const calculate = () => {
@@ -378,6 +394,8 @@ const Calculator = () => {
                 type="text"
                 value={formatNumber(formData.participants)}
                 onChange={(e) => handleNumericChange('participants', e.target.value)}
+                onKeyDown={handleKeyDown}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
               />
               <TextField
                 required
@@ -386,6 +404,8 @@ const Calculator = () => {
                 type="text"
                 value={formatNumber(formData.feePerPerson)}
                 onChange={(e) => handleNumericChange('feePerPerson', e.target.value)}
+                onKeyDown={handleKeyDown}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
               />
             </Box>
           </Stack>
