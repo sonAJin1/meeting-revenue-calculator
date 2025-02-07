@@ -7,10 +7,7 @@ import {
   Button,
   Box,
   IconButton,
-  Grid,
   List,
-  ListItem,
-  ListItemText,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,7 +20,6 @@ import HistoryIcon from '@mui/icons-material/History';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import InfoIcon from '@mui/icons-material/Info';
 import { toast } from 'react-toastify';
 
 // Helper functions
